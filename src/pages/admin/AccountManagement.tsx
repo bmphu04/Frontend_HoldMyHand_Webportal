@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { accountsApi } from '@/api'
 import { Button, Modal, MagicCard } from '@/components/ui'
 import { useNotificationStore } from '@/stores'
@@ -34,21 +34,21 @@ export default function AccountManagement() {
   })
   const { addNotification } = useNotificationStore()
 
-  const loadAccounts = async () => {
+  const loadAccounts = useCallback(async () => {
     setLoading(true)
     try {
       const data = await accountsApi.getAll()
       setAccounts(data)
-    } catch (error) {
+    } catch {
       addNotification({ type: 'error', title: 'Lỗi', message: 'Không thể tải danh sách tài khoản' })
     } finally {
       setLoading(false)
     }
-  }
+  }, [addNotification])
 
   useEffect(() => {
     loadAccounts()
-  }, [])
+  }, [loadAccounts])
 
   // Filter
   const filtered = accounts.filter((a) => {

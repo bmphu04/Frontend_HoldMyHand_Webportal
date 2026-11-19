@@ -12,7 +12,6 @@ interface ImportMeta {
 // ─── Google Identity Services (GIS) global typings ──────────────
 // Reference: https://developers.google.com/identity/oauth2/web/guides/use-token-model
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace google {
     namespace accounts {
       namespace id {

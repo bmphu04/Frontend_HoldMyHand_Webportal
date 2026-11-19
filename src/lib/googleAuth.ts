@@ -151,10 +151,8 @@ export async function showOneTap() {
       //   - "browser_not_supported", "invalid_client", "missing_client_id",
       //   - "opt_out_or_no_session", "secure_http_error", "suppressed_by_user",
       //   - "unregistered_origin", "third_party_cookies_disabled"
-      // eslint-disable-next-line no-console
       console.info('[Google One Tap] Không hiển thị:', reason)
     } else if (notification.isSkippedMoment()) {
-      // eslint-disable-next-line no-console
       console.info('[Google One Tap] Bị bỏ qua:', notification.getSkippedReason())
     }
   })
