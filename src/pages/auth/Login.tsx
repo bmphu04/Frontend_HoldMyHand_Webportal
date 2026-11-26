@@ -173,41 +173,70 @@ export default function Login({ initialMode }: AuthProps) {
     e.preventDefault()
     clearError()
 
-    if (!regDisplayName.trim()) {
+    const trimmedDisplayName = regDisplayName.trim()
+    const trimmedUsername = regUsername.trim()
+    const trimmedEmail = regEmail.trim()
+
+    if (!trimmedDisplayName) {
       notify.error('Vui lòng nhập tên hiển thị trong game')
       return
     }
-    if (!regUsername.trim()) {
+    if (!trimmedUsername) {
       notify.error('Vui lòng nhập tên đăng nhập')
       return
     }
-    if (!regEmail.trim()) {
+    if (!trimmedEmail) {
       notify.error('Vui lòng nhập email')
       return
     }
-    if (regPassword !== regConfirmPassword) {
-      notify.error('Mật khẩu xác nhận không khớp')
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(trimmedEmail)) {
+      notify.error('Địa chỉ email không đúng định dạng')
+      return
+    }
+    if (!regPassword) {
+      notify.error('Vui lòng nhập mật khẩu')
       return
     }
     if (regPassword.length < 6) {
       notify.error('Mật khẩu phải có ít nhất 6 ký tự')
       return
     }
+    if (regPassword !== regConfirmPassword) {
+      notify.error('Mật khẩu xác nhận không khớp')
+      return
+    }
 
     try {
+      // POST /api/auth/register with { username, email, password, displayName }
       await register({
-        displayName: regDisplayName.trim(),
-        username: regUsername.trim(),
-        email: regEmail.trim(),
+        username: trimmedUsername,
+        email: trimmedEmail,
         password: regPassword,
+        displayName: trimmedDisplayName,
       })
       notify.success('Tạo tài khoản thành công! Bạn có thể đăng nhập ngay.', 'Thành công')
-      setEmail(regUsername.trim())
+      setEmail(trimmedUsername)
       setPassword(regPassword)
+      setRegDisplayName('')
+      setRegUsername('')
+      setRegEmail('')
+      setRegPassword('')
+      setRegConfirmPassword('')
       switchMode('login')
     } catch (err: any) {
-      const message = err.response?.data?.message || err.response?.data || 'Đăng ký thất bại'
-      notify.error(typeof message === 'string' ? message : 'Đăng ký thất bại', 'Vui lòng thử lại')
+      let message = 'Đăng ký thất bại'
+      if (err.response?.data?.errors) {
+        const errorList = Object.values(err.response.data.errors)
+        if (errorList.length > 0 && Array.isArray(errorList[0]) && errorList[0].length > 0) {
+          message = errorList[0][0] as string
+        }
+      } else if (typeof err.response?.data?.message === 'string') {
+        message = err.response.data.message
+      } else if (typeof err.response?.data === 'string') {
+        message = err.response.data
+      }
+      notify.error(message, 'Vui lòng thử lại')
     }
   }
 
@@ -446,6 +475,12 @@ export default function Login({ initialMode }: AuthProps) {
 
                 {/* Register Form */}
                 <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
+                  {error && (
+                    <div className="p-2.5 bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-lg text-xs font-medium text-center">
+                      {error}
+                    </div>
+                  )}
+
                   {/* 1. Tên hiển thị */}
                   <div>
                     <label className="block text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-1.5">
@@ -455,6 +490,7 @@ export default function Login({ initialMode }: AuthProps) {
                       <User className="w-4 h-4 text-slate-500 absolute left-3.5 pointer-events-none" />
                       <input
                         type="text"
+                        name="displayName"
                         required
                         value={regDisplayName}
                         onChange={(e) => setRegDisplayName(e.target.value)}
@@ -473,6 +509,8 @@ export default function Login({ initialMode }: AuthProps) {
                       <User className="w-4 h-4 text-slate-500 absolute left-3.5 pointer-events-none" />
                       <input
                         type="text"
+                        name="username"
+                        autoComplete="username"
                         required
                         value={regUsername}
                         onChange={(e) => setRegUsername(e.target.value)}
@@ -491,6 +529,8 @@ export default function Login({ initialMode }: AuthProps) {
                       <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 pointer-events-none" />
                       <input
                         type="email"
+                        name="email"
+                        autoComplete="email"
                         required
                         value={regEmail}
                         onChange={(e) => setRegEmail(e.target.value)}
@@ -509,6 +549,8 @@ export default function Login({ initialMode }: AuthProps) {
                       <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 pointer-events-none" />
                       <input
                         type={showRegPassword ? 'text' : 'password'}
+                        name="password"
+                        autoComplete="new-password"
                         required
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
@@ -535,6 +577,8 @@ export default function Login({ initialMode }: AuthProps) {
                       <KeyRound className="w-4 h-4 text-slate-500 absolute left-3.5 pointer-events-none" />
                       <input
                         type={showRegConfirmPassword ? 'text' : 'password'}
+                        name="confirmPassword"
+                        autoComplete="new-password"
                         required
                         value={regConfirmPassword}
                         onChange={(e) => setRegConfirmPassword(e.target.value)}

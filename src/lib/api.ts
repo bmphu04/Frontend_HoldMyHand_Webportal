@@ -51,7 +51,9 @@ export const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const isLoginOrRefresh =
-    config.url?.includes('/api/auth/login') || config.url?.includes('/api/auth/refresh')
+    config.url?.includes('/api/auth/login') ||
+    config.url?.includes('/api/auth/refresh') ||
+    config.url?.includes('/api/auth/register')
   if (isLoginOrRefresh) {
     delete config.headers.Authorization
     return config

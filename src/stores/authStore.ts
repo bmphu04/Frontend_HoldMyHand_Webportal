@@ -68,9 +68,19 @@ export const useAuthStore = create<AuthState>()(
           await authApi.register(data)
           set({ isLoading: false })
         } catch (error: any) {
-          const message = error.response?.data?.message || error.response?.data || 'Đăng ký thất bại'
+          let message = 'Đăng ký thất bại'
+          if (error.response?.data?.errors) {
+            const errorList = Object.values(error.response.data.errors)
+            if (errorList.length > 0 && Array.isArray(errorList[0]) && errorList[0].length > 0) {
+              message = errorList[0][0] as string
+            }
+          } else if (typeof error.response?.data?.message === 'string') {
+            message = error.response.data.message
+          } else if (typeof error.response?.data === 'string') {
+            message = error.response.data
+          }
           set({
-            error: typeof message === 'string' ? message : 'Đăng ký thất bại',
+            error: message,
             isLoading: false,
           })
           throw error
