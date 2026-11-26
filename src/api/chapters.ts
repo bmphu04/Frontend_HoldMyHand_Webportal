@@ -12,6 +12,11 @@ export const chaptersApi = {
     return response.data
   },
 
+  update: async (id: string, data: Partial<Chapter>): Promise<Chapter> => {
+    const response = await queueApiRequest(() => api.put<Chapter>(`/api/mod/chapters/${id}`, data))
+    return response.data
+  },
+
   getQuests: async (chapterId: string): Promise<Quest[]> => {
     const response = await queueApiRequest(() => api.get<Quest[]>('/api/mod/quests', { params: { chapterId } }))
     return response.data
